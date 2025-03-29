@@ -2,9 +2,48 @@
 const Anthropic = require("@anthropic-ai/sdk");
 const config = require("../config");
 
+console.log("=== DEBUG ANTHROPIC API ===");
+console.log("Config ANTHROPIC_API_KEY:", config.ANTHROPIC_API_KEY ? "Presente" : "Ausente");
+console.log("Config ANTHROPIC_API_KEY length:", config.ANTHROPIC_API_KEY ? config.ANTHROPIC_API_KEY.length : 0);
+console.log("Config ANTHROPIC_API_KEY prefix:", config.ANTHROPIC_API_KEY ? config.ANTHROPIC_API_KEY.substring(0, 10) + '...' : 'não configurada');
+
+// Limpar e formatar a chave
+const cleanApiKey = config.ANTHROPIC_API_KEY.trim();
+console.log("Chave limpa:", cleanApiKey.substring(0, 10) + '...');
+
+// Criar instância do Anthropic com configurações específicas
 const anthropic = new Anthropic({
-  apiKey: config.CLAUDE_API_KEY, // Use config instead of process.env directly
+  apiKey: cleanApiKey,
+  defaultHeaders: {
+    'anthropic-version': '2023-06-01',
+    'x-api-key': cleanApiKey
+  }
 });
+
+// Função para testar a conexão
+async function testConnection() {
+  try {
+    const response = await anthropic.messages.create({
+      model: "claude-3-haiku-20240307",
+      max_tokens: 10,
+      messages: [{ role: "user", content: "test" }]
+    });
+    console.log("=== TESTE DE CONEXÃO BEM-SUCEDIDO ===");
+    return true;
+  } catch (error) {
+    console.error("=== ERRO NO TESTE DE CONEXÃO ===");
+    console.error("Detalhes do erro:", {
+      message: error.message,
+      status: error.status,
+      headers: error.headers,
+      request_id: error.request_id
+    });
+    return false;
+  }
+}
+
+// Executar teste de conexão
+testConnection();
 
 const REGISTRATION_INFO = `
 Olá! 👋
