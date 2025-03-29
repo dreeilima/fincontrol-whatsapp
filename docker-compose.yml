@@ -1,0 +1,27 @@
+version: "3"
+services:
+  whatsapp:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - WEBHOOK_URL=http://164.90.170.224:8000/webhook
+      - API_URL=http://164.90.170.224:8000
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY}   
+      - WHATSAPP_SECRET_KEY=${WHATSAPP_SECRET_KEY}
+      - WHATSAPP_URL=${WHATSAPP_URL}
+      - PUBLIC_URL=${PUBLIC_URL}
+      - HOST=${HOST}
+      - BOT_NUMBER=${BOT_NUMBER}
+      - WHATSAPP_TOKEN=${WHATSAPP_TOKEN}
+      - WEBHOOK_TOKEN=${WEBHOOK_TOKEN}
+      - UPDATE_TOKEN=${UPDATE_TOKEN}
+      - NODE_ENV=development
+      - DEBUG=anthropic*,app:*
+      - ANTHROPIC_API_VERSION=2024-03-20
+    volumes:
+      - ./whatsapp-data:/app/whatsapp-data
+    stop_grace_period: 30s
+    stop_signal: SIGTERM
+    init: true

@@ -1,0 +1,13 @@
+2025/03/21-21:35:36.767 488c Reusing MANIFEST C:\www\fincontrol-whatsapp\whatsapp-service\whatsapp-data\session-fincontrol-local\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/03/21-21:35:36.767 488c Recovering log #72
+2025/03/21-21:35:36.784 488c Reusing old log C:\www\fincontrol-whatsapp\whatsapp-service\whatsapp-data\session-fincontrol-local\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000072.log 
+2025/03/21-21:35:41.118 4618 Level-0 table #77: started
+2025/03/21-21:35:41.130 4618 Level-0 table #77: 433679 bytes OK
+2025/03/21-21:35:41.131 4618 Delete type=0 #72
+2025/03/21-21:35:41.132 488c Manual compaction at level-0 from '\x00$\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00%\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/03/21-21:35:43.089 48f8 Compacting 1@1 + 1@2 files
+2025/03/21-21:35:43.159 48f8 Generated table #78@1: 46495 keys, 1655425 bytes
+2025/03/21-21:35:43.159 48f8 Compacted 1@1 + 1@2 files => 1655425 bytes
+2025/03/21-21:35:43.160 48f8 compacted to: files[ 0 0 1 0 0 0 0 ]
+2025/03/21-21:35:43.161 48f8 Delete type=2 #74
+2025/03/21-21:35:43.161 48f8 Delete type=2 #77
