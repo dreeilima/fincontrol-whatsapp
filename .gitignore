@@ -1,0 +1,40 @@
+# Node modulesnode_modules/
+# Environment variables
+.env
+.env.docker
+.env.local
+.env.local.env.production
+# Logs
+*.lognpm-debug.log*
+# OS generated files
+.DS_StoreThumbs.db
+# WhatsApp session datawhatsapp-data/
+
+# Build output
+distbuild/
+# IDE/Editor folders
+.vscode/.idea/
+# Temporary files
+*.tmp*.temp
+# Dependency lock files
+package-lock.jsonyarn.lock
+# Debug files
+debug/
+
+
+
+
+
+
+
+
+/
+
+
+
+
+
+
+
+
+

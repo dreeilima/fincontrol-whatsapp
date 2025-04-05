@@ -1,7 +1,8 @@
-FROM node:18
+# Usar versão slim do Node.js para reduzir tamanho
+FROM node:18-slim
 
-# Install Chrome dependencies
-RUN apt-get update && apt-get install -y \
+# Instalar dependências do Chrome de forma otimizada
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gconf-service \
     libgbm-dev \
     libasound2 \
@@ -43,6 +44,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     chromium \
     chromium-l10n \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt/*
 
@@ -51,29 +53,28 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PUPPETEER_ARGS="--no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage,--disable-gpu,--no-first-run,--no-zygote,--single-process,--disable-extensions"
 
-# Criar diretório para dados do Chromium
+# Criar diretório para dados do Chromium com permissões corretas
 RUN mkdir -p /app/.wwebjs_auth /app/whatsapp-data \
     && chmod -R 777 /app
 
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-EXPOSE 3000
 
-# Comando para limpar cache do Chromium e iniciar o servidor
-# Criar diretórios temporários
+# Copiar apenas os arquivos de dependências primeiro
+COPY package*.json ./
+
+# Instalar dependências de produção apenas
+RUN npm ci --only=production
+
+# Copiar o arquivo .env.docker como .env
+COPY .env.docker ./.env
+
+# Copiar o resto dos arquivos
+COPY . .
+
+# Criar diretórios temporários com permissões corretas
 RUN mkdir -p /tmp/chrome-data /tmp/whatsapp-data && \
     chmod -R 777 /tmp/chrome-data /tmp/whatsapp-data
 
-# Adicionar script de inicialização
-COPY <<EOF /app/start.sh
-#!/bin/bash
-rm -rf /tmp/chrome-data/* /tmp/whatsapp-data/*
-exec node server.js
-EOF
+EXPOSE 3000
 
-RUN chmod +x /app/start.sh
-
-# Mudar o comando de inicialização
-CMD ["/app/start.sh"]
+CMD ["node", "server.js"]

@@ -95,9 +95,9 @@ app.post("/update-file", async (req, res) => {
 
 // Initialize server
 const server = app
-  .listen(config.port, config.host, () => {
+  .listen(config.port, "0.0.0.0", () => {
     console.log("\n=== SERVIDOR INICIADO ===");
-    console.log(`Local: http://${config.host}:${config.port}/`);
+    console.log(`Local: http://0.0.0.0:${config.port}/`);
     console.log(`Público: http://${config.publicUrl}:${config.port}/qr`);
     console.log(`IP Público: ${config.publicUrl}`);
   })
@@ -106,7 +106,7 @@ const server = app
       console.log(
         `Port ${config.port} is in use. Trying port ${config.port + 1}`
       );
-      server.listen(config.port + 1, config.host);
+      server.listen(config.port + 1, "0.0.0.0");
     } else {
       console.error("Server error:", err);
     }

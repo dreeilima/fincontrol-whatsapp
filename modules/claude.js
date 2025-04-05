@@ -3,21 +3,44 @@ const Anthropic = require("@anthropic-ai/sdk");
 const config = require("../config");
 
 console.log("=== DEBUG ANTHROPIC API ===");
-console.log("Config ANTHROPIC_API_KEY:", config.ANTHROPIC_API_KEY ? "Presente" : "Ausente");
-console.log("Config ANTHROPIC_API_KEY length:", config.ANTHROPIC_API_KEY ? config.ANTHROPIC_API_KEY.length : 0);
-console.log("Config ANTHROPIC_API_KEY prefix:", config.ANTHROPIC_API_KEY ? config.ANTHROPIC_API_KEY.substring(0, 10) + '...' : 'não configurada');
+console.log(
+  "Config ANTHROPIC_API_KEY:",
+  config.ANTHROPIC_API_KEY ? "Presente" : "Ausente"
+);
+console.log(
+  "Config ANTHROPIC_API_KEY length:",
+  config.ANTHROPIC_API_KEY ? config.ANTHROPIC_API_KEY.length : 0
+);
+console.log(
+  "Config ANTHROPIC_API_KEY prefix:",
+  config.ANTHROPIC_API_KEY
+    ? config.ANTHROPIC_API_KEY.substring(0, 10) + "..."
+    : "não configurada"
+);
+
+// Verificar se a chave existe antes de tentar usar
+if (!config.ANTHROPIC_API_KEY) {
+  console.error("ERRO: ANTHROPIC_API_KEY não está configurada!");
+  console.error(
+    "Por favor, configure a variável ANTHROPIC_API_KEY no arquivo .env"
+  );
+  // Não vamos encerrar o processo, apenas retornar um objeto vazio
+  module.exports = {
+    testConnection: async () => false,
+    anthropic: null,
+  };
+  return;
+}
 
 // Limpar e formatar a chave
 const cleanApiKey = config.ANTHROPIC_API_KEY.trim();
-console.log("Chave limpa:", cleanApiKey.substring(0, 10) + '...');
+console.log("Chave limpa:", cleanApiKey.substring(0, 10) + "...");
 
 // Criar instância do Anthropic com configurações específicas
 const anthropic = new Anthropic({
   apiKey: cleanApiKey,
-  defaultHeaders: {
-    'anthropic-version': '2023-06-01',
-    'x-api-key': cleanApiKey
-  }
+  // Definir a versão da API explicitamente
+  anthropicVersion: "2023-06-01",
 });
 
 // Função para testar a conexão
@@ -26,7 +49,7 @@ async function testConnection() {
     const response = await anthropic.messages.create({
       model: "claude-3-haiku-20240307",
       max_tokens: 10,
-      messages: [{ role: "user", content: "test" }]
+      messages: [{ role: "user", content: "test" }],
     });
     console.log("=== TESTE DE CONEXÃO BEM-SUCEDIDO ===");
     return true;
@@ -36,7 +59,7 @@ async function testConnection() {
       message: error.message,
       status: error.status,
       headers: error.headers,
-      request_id: error.request_id
+      request_id: error.request_id,
     });
     return false;
   }
@@ -94,7 +117,7 @@ Como posso te ajudar hoje? 😊
 const ERROR_MESSAGE = `
 ❌ *Ops! Algo deu errado*
 
-Não consegui processar sua solicitação. 
+Não consegui processar sua solicitação.
 
 💡 *O que fazer?*
 • Verifique se o comando está correto
@@ -317,44 +340,48 @@ const NO_TRANSACTIONS_CATEGORY =
 
 async function generateDynamicResponse(context) {
   try {
-    const hora = new Date().toLocaleTimeString('pt-BR');
-    const horaNum = parseInt(hora.split(':')[0]);
-    let saudacao = '';
-    
+    const hora = new Date().toLocaleTimeString("pt-BR");
+    const horaNum = parseInt(hora.split(":")[0]);
+    let saudacao = "";
+
     if (horaNum >= 5 && horaNum < 12) {
-      saudacao = 'Bom dia';
+      saudacao = "Bom dia";
     } else if (horaNum >= 12 && horaNum < 18) {
-      saudacao = 'Boa tarde';
+      saudacao = "Boa tarde";
     } else {
-      saudacao = 'Boa noite';
+      saudacao = "Boa noite";
     }
 
     let prompt = `Você é o FinControl, um assistente financeiro amigável via WhatsApp.
     Responda de forma curta e objetiva, usando emojis e formatação adequada.
-    
+
     Contexto atual:
     - Saudação: ${saudacao}
     - Hora: ${hora}
     - Tipo de mensagem: ${context.type}
-    - Mensagem do usuário: ${context.message || ''}
-    - Nome do usuário: ${context.userName || 'Usuário'}`;
+    - Mensagem do usuário: ${context.message || ""}
+    - Nome do usuário: ${context.userName || "Usuário"}`;
 
     // Se for uma solicitação de conselho financeiro, adiciona o contexto financeiro
     if (context.type === "FINANCIAL_ADVICE" && context.financialContext) {
       const message = context.message?.toLowerCase() || "";
       const isAdvice = message.includes("conselhos");
       const isTips = message.includes("dicas");
-      
+
       prompt += `
-      
+
       Contexto Financeiro:
       - Saldo atual: ${context.financialContext.balance}
       - Receitas do mês: ${context.financialContext.monthlyIncome}
       - Despesas do mês: ${context.financialContext.monthlyExpenses}
-      - Categorias com mais gastos: ${context.financialContext.topExpenseCategories}
+      - Categorias com mais gastos: ${
+        context.financialContext.topExpenseCategories
+      }
       - Tendências: ${context.financialContext.trends}
-      
-      ${isAdvice ? `
+
+      ${
+        isAdvice
+          ? `
       Gere uma análise financeira estratégica seguindo EXATAMENTE este formato:
 
       💡 *Análise Financeira Estratégica*
@@ -369,16 +396,16 @@ async function generateDynamicResponse(context) {
       🚀 [Terceiro Parágrafo - Plano de Ação]
       Liste 2-3 ações concretas para implementar agora, mantenha o tom motivador e profissional.
 
-      IMPORTANTE: 
+      IMPORTANTE:
       1. Siga exatamente este formato, incluindo os emojis e a formatação markdown
       2. Não inclua títulos adicionais
       3. Não use listas com bullets (•) no texto
       4. Escreva em parágrafos contínuos
       5. Use os emojis sugeridos no início de cada parágrafo
       6. Mantenha o tom profissional e estratégico
-      7. Não adicione linhas em branco extras entre os parágrafos` : 
-      
-      isTips ? `
+      7. Não adicione linhas em branco extras entre os parágrafos`
+          : isTips
+          ? `
       Gere dicas práticas de economia seguindo EXATAMENTE este formato:
 
       💡 *Dicas Práticas de Economia*
@@ -393,16 +420,15 @@ async function generateDynamicResponse(context) {
       🌱 [Terceiro Parágrafo - Hábitos Positivos]
       Liste 2-3 hábitos simples para implementar, mantenha o tom leve e motivador.
 
-      IMPORTANTE: 
+      IMPORTANTE:
       1. Siga exatamente este formato, incluindo os emojis e a formatação markdown
       2. Não inclua títulos adicionais
       3. Não use listas com bullets (•) no texto
       4. Escreva em parágrafos contínuos
       5. Use os emojis sugeridos no início de cada parágrafo
       6. Mantenha o tom leve e motivador
-      7. Não adicione linhas em branco extras entre os parágrafos` : 
-      
-      `Gere uma análise financeira personalizada seguindo EXATAMENTE este formato:
+      7. Não adicione linhas em branco extras entre os parágrafos`
+          : `Gere uma análise financeira personalizada seguindo EXATAMENTE este formato:
 
       💡 *Análise Financeira Personalizada*
       ━━━━━━━━━━━━━━━━━━━━━
@@ -416,17 +442,18 @@ async function generateDynamicResponse(context) {
       🚀 [Terceiro Parágrafo - Ações Práticas]
       Liste 2-3 ações concretas para implementar, mantenha o tom motivador e profissional.
 
-      IMPORTANTE: 
+      IMPORTANTE:
       1. Siga exatamente este formato, incluindo os emojis e a formatação markdown
       2. Não inclua títulos adicionais
       3. Não use listas com bullets (•) no texto
       4. Escreva em parágrafos contínuos
       5. Use os emojis sugeridos no início de cada parágrafo
       6. Mantenha o tom profissional e motivador
-      7. Não adicione linhas em branco extras entre os parágrafos`}`;
+      7. Não adicione linhas em branco extras entre os parágrafos`
+      }`;
     } else {
       prompt += `
-      
+
       Regras para a resposta:
       1. Use emojis relevantes (💰, 📊, 💡, etc)
       2. Use formatação markdown para destaque (*texto*)
@@ -434,10 +461,10 @@ async function generateDynamicResponse(context) {
       4. Seja direto e amigável
       5. Não liste comandos, apenas mencione que existem
       6. Use quebras de linha para melhor legibilidade
-      
+
       Exemplo de estilo:
       👋 *Bom dia, {nome}!*
-      
+
       Como posso te ajudar hoje? Use "❓ ajuda" para ver os comandos disponíveis.`;
     }
 
@@ -447,15 +474,16 @@ async function generateDynamicResponse(context) {
       messages: [
         {
           role: "user",
-          content: prompt
-        }
+          content: prompt,
+        },
       ],
       temperature: 0.7,
-      system: context.type === "FINANCIAL_ADVICE" ? 
-        (context.message?.toLowerCase().includes("conselhos") ? 
-          "Você é um consultor financeiro estratégico especializado em análise de gastos pessoais. Suas respostas devem seguir EXATAMENTE o formato solicitado, incluindo emojis e formatação markdown." :
-          "Você é um especialista em economia doméstica e dicas práticas de finanças. Suas respostas devem seguir EXATAMENTE o formato solicitado, incluindo emojis e formatação markdown.") :
-        "Você é um consultor financeiro especializado em análise de gastos pessoais. Suas respostas devem seguir EXATAMENTE o formato solicitado, incluindo emojis e formatação markdown."
+      system:
+        context.type === "FINANCIAL_ADVICE"
+          ? context.message?.toLowerCase().includes("conselhos")
+            ? "Você é um consultor financeiro estratégico especializado em análise de gastos pessoais. Suas respostas devem seguir EXATAMENTE o formato solicitado, incluindo emojis e formatação markdown."
+            : "Você é um especialista em economia doméstica e dicas práticas de finanças. Suas respostas devem seguir EXATAMENTE o formato solicitado, incluindo emojis e formatação markdown."
+          : "Você é um consultor financeiro especializado em análise de gastos pessoais. Suas respostas devem seguir EXATAMENTE o formato solicitado, incluindo emojis e formatação markdown.",
     });
 
     return response.content[0].text;
@@ -467,12 +495,13 @@ async function generateDynamicResponse(context) {
 
 async function generateResponse(context) {
   // Para mensagens que podem ser dinâmicas
-  if (context.type === "WELCOME_REGISTERED_USER" || 
-      context.type === "REGISTRATION_INFO" ||
-      context.type === "ERROR" ||
-      context.type === "UNKNOWN_COMMAND" ||
-      context.type === "FINANCIAL_ADVICE") {
-    
+  if (
+    context.type === "WELCOME_REGISTERED_USER" ||
+    context.type === "REGISTRATION_INFO" ||
+    context.type === "ERROR" ||
+    context.type === "UNKNOWN_COMMAND" ||
+    context.type === "FINANCIAL_ADVICE"
+  ) {
     const dynamicResponse = await generateDynamicResponse(context);
     if (dynamicResponse) {
       return dynamicResponse;

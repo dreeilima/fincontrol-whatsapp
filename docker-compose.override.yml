@@ -1,0 +1,6 @@
+version: "3"
+services:
+  whatsapp:
+    network_mode: "host"
+    environment:
+      - HOST=0.0.0.0
